@@ -1,84 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Workout Timer</title>
+  <title>Workout Timer Pro</title>
   <style>
-    body { font-family: Arial; text-align: center; background: #111; color: #fff; }
-    .card { margin: 40px auto; padding: 20px; border-radius: 20px; background: #222; width: 90%; max-width: 400px; }
-    button { padding: 12px 20px; border: none; border-radius: 10px; margin: 5px; font-size: 16px; }
+    body { font-family: Arial; text-align: center; background: #0d0d0d; color: #fff; }
+    .card { margin: 30px auto; padding: 20px; border-radius: 20px; background: #1a1a1a; width: 90%; max-width: 400px; box-shadow: 0 0 15px rgba(0,0,0,0.5);} 
+    button { padding: 12px 16px; border: none; border-radius: 10px; margin: 5px; font-size: 14px; }
+    h2 { min-height: 50px; }
   </style>
 </head>
 <body>
   <h1>Workout Routine</h1>
   <div class="card">
     <h2 id="exercise">Press Start</h2>
-    <p id="timer">0</p>
-    <button onclick="startWorkout()">Start</button>
-    <button onclick="resetWorkout()">Reset</button>
-  </div>
+    <p id="timer">--</p><button onclick="startWorkout()">Start</button>
+<button onclick="pauseWorkout()">Pause</button>
+<button onclick="nextExercise()">Next</button>
+<button onclick="prevExercise()">Back</button>
+<button onclick="resetWorkout()">Reset</button>
 
-<script>
+  </div><script>
 const exercises = [
-  {name: "AB Rollouts - 15 reps", time: 30},
+  {name: "AB Rollouts - 15 reps"},
   {name: "Rest", time: 20},
-  {name: "V-Ups - 15 reps", time: 30},
+  {name: "V-Ups - 15 reps"},
   {name: "Rest", time: 20},
-  {name: "Leg Raises - 20 reps", time: 30},
+  {name: "Leg Raises - 20 reps"},
   {name: "Rest", time: 20},
-  {name: "Flutter Kicks - 35 sec", time: 35},
+  {name: "Flutter Kicks", time: 35},
   {name: "Rest", time: 20},
-  {name: "Plank - 60 sec", time: 60},
+  {name: "Plank", time: 60},
   {name: "Rest", time: 20},
-  {name: "Russian Twists - 30 reps", time: 30},
+  {name: "Russian Twists - 30 reps"},
   {name: "Rest", time: 20},
-  {name: "Dead Bugs - 30 reps", time: 30},
+  {name: "Dead Bugs - 30 reps"},
   {name: "Rest", time: 20},
-  {name: "Push Ups - 20 reps", time: 30},
+  {name: "Push Ups - 20 reps"},
   {name: "Round Rest", time: 60}
 ];
 
 let index = 0;
 let timer;
 let timeLeft = 0;
+let isPaused = false;
 
 function startWorkout() {
-  if (index >= exercises.length) index = 0;
+  isPaused = false;
   runExercise();
 }
 
 function runExercise() {
+  clearInterval(timer);
   const ex = exercises[index];
   document.getElementById("exercise").innerText = ex.name;
-  timeLeft = ex.time;
-  updateTimer();
 
-  timer = setInterval(() => {
-    timeLeft--;
+  if (ex.time) {
+    timeLeft = ex.time;
     updateTimer();
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      index++;
-      if (index < exercises.length) {
-        runExercise();
-      } else {
-        document.getElementById("exercise").innerText = "Workout Complete!";
+
+    timer = setInterval(() => {
+      if (!isPaused) {
+        timeLeft--;
+        updateTimer();
+        if (timeLeft <= 0) {
+          nextExercise();
+        }
       }
-    }
-  }, 1000);
+    }, 1000);
+  } else {
+    document.getElementById("timer").innerText = "Done manually";
+  }
 }
 
 function updateTimer() {
   document.getElementById("timer").innerText = timeLeft + "s";
 }
 
+function pauseWorkout() {
+  isPaused = !isPaused;
+}
+
+function nextExercise() {
+  index++;
+  if (index >= exercises.length) {
+    document.getElementById("exercise").innerText = "Workout Complete!";
+    document.getElementById("timer").innerText = "";
+    clearInterval(timer);
+    return;
+  }
+  runExercise();
+}
+
+function prevExercise() {
+  if (index > 0) {
+    index--;
+    runExercise();
+  }
+}
+
 function resetWorkout() {
   clearInterval(timer);
   index = 0;
+  isPaused = false;
   document.getElementById("exercise").innerText = "Press Start";
-  document.getElementById("timer").innerText = "0";
+  document.getElementById("timer").innerText = "--";
 }
-</script>
-</body>
+</script></body>
 </html>
