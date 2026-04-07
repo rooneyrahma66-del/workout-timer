@@ -1,28 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workout Timer</title>
+  <style>
+    body { font-family: Arial; text-align: center; background: #111; color: #fff; }
+    .card { margin: 40px auto; padding: 20px; border-radius: 20px; background: #222; width: 90%; max-width: 400px; }
+    button { padding: 12px 20px; border: none; border-radius: 10px; margin: 5px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Workout Routine</h1>
+  <div class="card">
+    <h2 id="exercise">Press Start</h2>
+    <p id="timer">0</p>
+    <button onclick="startWorkout()">Start</button>
+    <button onclick="resetWorkout()">Reset</button>
+  </div>
 
+<script>
+const exercises = [
+  {name: "AB Rollouts - 15 reps", time: 30},
+  {name: "Rest", time: 20},
+  {name: "V-Ups - 15 reps", time: 30},
+  {name: "Rest", time: 20},
+  {name: "Leg Raises - 20 reps", time: 30},
+  {name: "Rest", time: 20},
+  {name: "Flutter Kicks - 35 sec", time: 35},
+  {name: "Rest", time: 20},
+  {name: "Plank - 60 sec", time: 60},
+  {name: "Rest", time: 20},
+  {name: "Russian Twists - 30 reps", time: 30},
+  {name: "Rest", time: 20},
+  {name: "Dead Bugs - 30 reps", time: 30},
+  {name: "Rest", time: 20},
+  {name: "Push Ups - 20 reps", time: 30},
+  {name: "Round Rest", time: 60}
+];
 
+let index = 0;
+let timer;
+let timeLeft = 0;
 
-  
-  
-  
-  
+function startWorkout() {
+  if (index >= exercises.length) index = 0;
+  runExercise();
+}
 
+function runExercise() {
+  const ex = exercises[index];
+  document.getElementById("exercise").innerText = ex.name;
+  timeLeft = ex.time;
+  updateTimer();
 
-  
-Workout Routine
+  timer = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      index++;
+      if (index < exercises.length) {
+        runExercise();
+      } else {
+        document.getElementById("exercise").innerText = "Workout Complete!";
+      }
+    }
+  }, 1000);
+}
 
-  
+function updateTimer() {
+  document.getElementById("timer").innerText = timeLeft + "s";
+}
 
-    
-Press Start
-
-    
-0
-
-    Start
-    Reset
-  
-
-
-
-
-
+function resetWorkout() {
+  clearInterval(timer);
+  index = 0;
+  document.getElementById("exercise").innerText = "Press Start";
+  document.getElementById("timer").innerText = "0";
+}
+</script>
+</body>
+</html>
