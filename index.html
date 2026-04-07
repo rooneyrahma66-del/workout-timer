@@ -2,23 +2,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Workout Timer Pro</title>
-  <style>
-    body { font-family: Arial; text-align: center; background: #0d0d0d; color: #fff; }
+  <title>Workout Timer Pro</title>  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">  <style>
+    body { font-family: 'Poppins', sans-serif; text-align: center; background: #0d0d0d; color: #fff; }
     .card { margin: 30px auto; padding: 20px; border-radius: 20px; background: #1a1a1a; width: 90%; max-width: 400px; box-shadow: 0 0 15px rgba(0,0,0,0.5);} 
     button { padding: 12px 16px; border: none; border-radius: 10px; margin: 5px; font-size: 14px; }
     h2 { min-height: 50px; }
-  </style>
-</head>
+    .history { margin-top: 20px; font-size: 14px; opacity: 0.85; }
+    .overall { font-size: 18px; margin-bottom: 10px; }
+  </style></head>
 <body>
   <h1>Workout Routine</h1>
   <div class="card">
-    <h2 id="exercise">Press Start</h2>
-    <p id="timer">--</p><button onclick="startWorkout()">Start</button>
+    <div class="overall">Total Time: <span id="overallTimer">0s</span></div><h2 id="exercise">Press Start</h2>
+<p id="timer">--</p>
+
+<button onclick="startWorkout()">Start</button>
 <button onclick="pauseWorkout()">Pause</button>
 <button onclick="nextExercise()">Next</button>
 <button onclick="prevExercise()">Back</button>
+<button onclick="finishWorkout()">Finish</button>
 <button onclick="resetWorkout()">Reset</button>
+
+<div class="history">
+  <h3>Workout History (Last 30 Days)</h3>
+  <ul id="historyList"></ul>
+</div>
 
   </div><script>
 const exercises = [
@@ -42,18 +50,37 @@ const exercises = [
 
 let index = 0;
 let timer;
+let overallInterval;
 let timeLeft = 0;
+let overallTime = 0;
 let isPaused = false;
+
+function vibrate(pattern = 200) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
 
 function startWorkout() {
   isPaused = false;
+  startOverallTimer();
   runExercise();
+}
+
+function startOverallTimer() {
+  clearInterval(overallInterval);
+  overallInterval = setInterval(() => {
+    if (!isPaused) {
+      overallTime++;
+      document.getElementById("overallTimer").innerText = overallTime + "s";
+    }
+  }, 1000);
 }
 
 function runExercise() {
   clearInterval(timer);
   const ex = exercises[index];
   document.getElementById("exercise").innerText = ex.name;
+
+  vibrate([100,50,100]);
 
   if (ex.time) {
     timeLeft = ex.time;
@@ -63,7 +90,11 @@ function runExercise() {
       if (!isPaused) {
         timeLeft--;
         updateTimer();
+
+        if (timeLeft === 3) vibrate([100,100,100]);
+
         if (timeLeft <= 0) {
+          vibrate([300]);
           nextExercise();
         }
       }
@@ -84,9 +115,7 @@ function pauseWorkout() {
 function nextExercise() {
   index++;
   if (index >= exercises.length) {
-    document.getElementById("exercise").innerText = "Workout Complete!";
-    document.getElementById("timer").innerText = "";
-    clearInterval(timer);
+    finishWorkout();
     return;
   }
   runExercise();
@@ -99,12 +128,58 @@ function prevExercise() {
   }
 }
 
+function finishWorkout() {
+  clearInterval(timer);
+  clearInterval(overallInterval);
+  saveWorkout();
+  document.getElementById("exercise").innerText = "Workout Finished!";
+  document.getElementById("timer").innerText = "";
+  vibrate([500,200,500]);
+}
+
 function resetWorkout() {
   clearInterval(timer);
+  clearInterval(overallInterval);
   index = 0;
+  overallTime = 0;
   isPaused = false;
   document.getElementById("exercise").innerText = "Press Start";
   document.getElementById("timer").innerText = "--";
+  document.getElementById("overallTimer").innerText = "0s";
 }
+
+// ===== History (30 days + duration) =====
+function saveWorkout() {
+  const now = new Date();
+  let history = JSON.parse(localStorage.getItem("workoutHistory")) || [];
+
+  history.unshift({
+    date: now.toISOString(),
+    duration: overallTime
+  });
+
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 30);
+
+  history = history.filter(item => new Date(item.date) >= cutoff);
+
+  localStorage.setItem("workoutHistory", JSON.stringify(history));
+  loadHistory();
+}
+
+function loadHistory() {
+  const list = document.getElementById("historyList");
+  list.innerHTML = "";
+
+  let history = JSON.parse(localStorage.getItem("workoutHistory")) || [];
+
+  history.forEach(item => {
+    let li = document.createElement("li");
+    li.textContent = `${new Date(item.date).toLocaleString()} - ${item.duration}s`;
+    list.appendChild(li);
+  });
+}
+
+loadHistory();
 </script></body>
 </html>
